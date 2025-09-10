@@ -1,17 +1,4 @@
 services:
-  db:
-    restart: unless-stopped
-    image: postgres:14-alpine
-    shm_size: 256mb
-    networks:
-      - default
-    healthcheck:
-      test: ['CMD', 'pg_isready', '-U', 'postgres']
-    volumes:
-      - ./postgres14:/var/lib/postgresql/data
-    environment:
-      - 'POSTGRES_HOST_AUTH_METHOD=trust'
-
   redis:
     restart: unless-stopped
     image: redis:7-alpine
@@ -33,7 +20,6 @@ services:
     healthcheck:
       test: ['CMD-SHELL', 'wget -q --spider --proxy=off localhost:3000/health || exit 1']
     depends_on:
-      - db
       - redis
     volumes:
       - ./public/system:/mastodon/public/system
@@ -61,7 +47,6 @@ services:
     healthcheck:
       test: ['CMD-SHELL', 'wget -q --spider --proxy=off localhost:4000/api/v1/streaming/health || exit 1']
     depends_on:
-      - db
       - redis
     labels:
       - traefik.enable=true
@@ -82,7 +67,6 @@ services:
     env_file: .env.production
     command: bundle exec sidekiq
     depends_on:
-      - db
       - redis
     networks:
       - default
